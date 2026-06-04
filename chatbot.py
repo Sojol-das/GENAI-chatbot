@@ -1,6 +1,6 @@
 import os
 import sys
-import time  # <-- NEW: Required for rate limiting
+import time  
 from dotenv import load_dotenv
 import google.generativeai as genai
 
@@ -19,14 +19,14 @@ SYSTEM_INSTRUCTION = (
     "prefer Python examples."
 )
 
-# <-- CHANGED: Swapped to a lighter model for higher free-tier limits
+
 model = genai.GenerativeModel(
     model_name="gemini-2.5-flash-lite", 
     system_instruction=SYSTEM_INSTRUCTION,
 )
 
 conversation_history = []
-MAX_HISTORY_LENGTH = 10  # <-- NEW: Keeps only the last 5 user/model exchanges
+MAX_HISTORY_LENGTH = 10  
 
 def chat(user_message: str) -> str:
     global conversation_history
@@ -36,7 +36,7 @@ def chat(user_message: str) -> str:
         "parts": [user_message],
     })
 
-    # <-- NEW: Truncate history to prevent TPM token bloat
+    
     if len(conversation_history) > MAX_HISTORY_LENGTH:
         conversation_history = conversation_history[-MAX_HISTORY_LENGTH:]
 
@@ -91,13 +91,13 @@ def main():
             reply = chat(user_input)
             print(f"\nGemini: {reply}")
             
-            # <-- NEW: A tiny buffer to prevent tripping the RPM limit
+            #  A tiny buffer to prevent tripping the RPM limit
             time.sleep(2) 
             
         except Exception as e:
             error_msg = str(e)
             if "429" in error_msg:
-                # <-- NEW: Exponential backoff instead of failing immediately
+                #  Exponential backoff instead of failing immediately
                 print("\n[API Error] Rate limit exceeded. Cooling down for 30 seconds...")
                 time.sleep(30)
             else:
